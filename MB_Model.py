@@ -16,103 +16,122 @@ import scipy.sparse.linalg
 import scipy
 import multiprocessing as mp
 
-def V(xycoord,Deep=True):
-    V=0.0
-        #Muller Brown Parameters
+
+def V(xycoord, Deep=True):
+    V = 0.0
+    # Muller Brown Parameters
     if Deep:
-        A=np.array([-250.0,-150.0,-170.0,15])
-        a=np.array([-1.,-3.,-6.5,0.7])
-        b=np.array([0,0,11,0.6])
-        c=np.array([-10.,-30,-6.5,0.7])
-        x_0=np.array([1.0,-.29,-0.5,-1])
-        y_0=np.array([0.0,0.5,1.5,1.0])
+        A = np.array([-250.0, -150.0, -170.0, 15])
+        a = np.array([-1.0, -3.0, -6.5, 0.7])
+        b = np.array([0, 0, 11, 0.6])
+        c = np.array([-10.0, -30, -6.5, 0.7])
+        x_0 = np.array([1.0, -0.29, -0.5, -1])
+        y_0 = np.array([0.0, 0.5, 1.5, 1.0])
     else:
-        A=np.array([-200.0,-100.0,-170.0,15])
-        a=np.array([-1.,-1.,-6.5,0.7])
-        b=np.array([0,0,11,0.6])
-        c=np.array([-10.,-10,-6.5,0.7])
-        x_0=np.array([1.0,-.27,-0.5,-1])
-        y_0=np.array([0.0,0.5,1.5,1.0])
-    Amp=0
-    freq=6
+        A = np.array([-200.0, -100.0, -170.0, 15])
+        a = np.array([-1.0, -1.0, -6.5, 0.7])
+        b = np.array([0, 0, 11, 0.6])
+        c = np.array([-10.0, -10, -6.5, 0.7])
+        x_0 = np.array([1.0, -0.27, -0.5, -1])
+        y_0 = np.array([0.0, 0.5, 1.5, 1.0])
+    Amp = 0
+    freq = 6
     # We rename the first and second coordinate to x and y, for readability.
-    x=xycoord[...,0]
-    y=xycoord[...,1]
+    x = xycoord[..., 0]
+    y = xycoord[..., 1]
     # The Muller Brown potential is calculated using a sum of 4 Gaussians.
     for i in range(4):
-        V+=A[i]*np.exp(a[i]*(x-x_0[i])**2+b[i]*(x-x_0[i])*(y-y_0[i])+c[i]*(y-y_0[i])**2)
-    return (V/20.+7.3262119)
+        V += A[i] * np.exp(
+            a[i] * (x - x_0[i]) ** 2
+            + b[i] * (x - x_0[i]) * (y - y_0[i])
+            + c[i] * (y - y_0[i]) ** 2
+        )
+    return V / 20.0 + 7.3262119
 
-def F(xycoord,Deep=True):
-    fx=0.0
-    fy=0.0
-    #Muller Brown Parameters
+
+def F(xycoord, Deep=True):
+    fx = 0.0
+    fy = 0.0
+    # Muller Brown Parameters
     if Deep:
-        A=np.array([-250.0,-150.0,-170.0,15])
-        a=np.array([-1.,-3.,-6.5,0.7])
-        b=np.array([0,0,11,0.6])
-        c=np.array([-10.,-30,-6.5,0.7])
-        x_0=np.array([1.0,-.29,-0.5,-1])
-        y_0=np.array([0.0,0.5,1.5,1.0])
+        A = np.array([-250.0, -150.0, -170.0, 15])
+        a = np.array([-1.0, -3.0, -6.5, 0.7])
+        b = np.array([0, 0, 11, 0.6])
+        c = np.array([-10.0, -30, -6.5, 0.7])
+        x_0 = np.array([1.0, -0.29, -0.5, -1])
+        y_0 = np.array([0.0, 0.5, 1.5, 1.0])
     else:
-        A=np.array([-200.0,-100.0,-170.0,15])
-        a=np.array([-1.,-1.,-6.5,0.7])
-        b=np.array([0,0,11,0.6])
-        c=np.array([-10.,-10,-6.5,0.7])
-        x_0=np.array([1.0,-.27,-0.5,-1])
-        y_0=np.array([0.0,0.5,1.5,1.0])
-    Amp=0
-    Amp=0
-    freq=6
+        A = np.array([-200.0, -100.0, -170.0, 15])
+        a = np.array([-1.0, -1.0, -6.5, 0.7])
+        b = np.array([0, 0, 11, 0.6])
+        c = np.array([-10.0, -10, -6.5, 0.7])
+        x_0 = np.array([1.0, -0.27, -0.5, -1])
+        y_0 = np.array([0.0, 0.5, 1.5, 1.0])
+    Amp = 0
+    Amp = 0
+    freq = 6
     # We rename the first and second coordinate to x and y, for readability.
-    x=xycoord[0]#xycoord[...,0]
-    y=xycoord[1]#xycoord[...,1]
+    x = xycoord[0]  # xycoord[...,0]
+    y = xycoord[1]  # xycoord[...,1]
     # The Muller Brown potential is defined as a sum of 4 Gaussians.
     # To calculate the force, we add up the negative partial deratives in both x and y.
     # This becomes the x and y components of our force, respectively.
     for i in range(4):
-        factor=-1.0*A[i]* np.exp(a[i]*(x-x_0[i])**2+b[i]*(x-x_0[i])*(y-y_0[i])+c[i]*(y-y_0[i])**2)
-        fx+=(2.0*a[i]*(x-x_0[i])+b[i]*(y-y_0[i]))*factor
-        fy+=(2.0*c[i]*(y-y_0[i])+b[i]*(x-x_0[i]))*factor
-    return np.array([fx,fy])/20.
+        factor = (
+            -1.0
+            * A[i]
+            * np.exp(
+                a[i] * (x - x_0[i]) ** 2
+                + b[i] * (x - x_0[i]) * (y - y_0[i])
+                + c[i] * (y - y_0[i]) ** 2
+            )
+        )
+        fx += (2.0 * a[i] * (x - x_0[i]) + b[i] * (y - y_0[i])) * factor
+        fy += (2.0 * c[i] * (y - y_0[i]) + b[i] * (x - x_0[i])) * factor
+    return np.array([fx, fy]) / 20.0
 
 
-def Sample_Starts(N,vmax=15.,Deep=True):
-    temp=np.zeros((N,2))
+def Sample_Starts(N, vmax=15.0, Deep=True):
+    temp = np.zeros((N, 2))
     for j in range(N):
         while True:
-            tx=np.random.rand()*2.5-1.5
-            ty=np.random.rand()*2.2-0.3
-            if V(np.asarray([tx,ty]),Deep=Deep)<vmax:
+            tx = np.random.rand() * 2.5 - 1.5
+            ty = np.random.rand() * 2.2 - 0.3
+            if V(np.asarray([tx, ty]), Deep=Deep) < vmax:
                 break
-        temp[j,0]=tx
-        temp[j,1]=ty
+        temp[j, 0] = tx
+        temp[j, 1] = ty
     return temp
 
 
-def Integrator(ps,Nproc=30):
-    pool=mp.Pool(processes=Nproc)
-    L=pool.map(Run,ps)
-    result=[]
+def Integrator(ps, Nproc=30):
+    pool = mp.Pool(processes=Nproc)
+    L = pool.map(Run, ps)
+    result = []
     pool.close()
-    print('here3')
-    #L=[Run_Ndx_Stopped_Accurate(p) for p in ps]
+    print("here3")
+    # L=[Run_Ndx_Stopped_Accurate(p) for p in ps]
     for i in range(len(ps)):
         result.append(L[i])
     return result
 
 
 def Run(Ps):
-    x0,dt,beta,stride,tau,Deep=Ps
-    dim=2
-    np.random.seed(divmod(torch.seed(),2**32)[0])
-    ans=np.zeros((tau+1,dim))
-    ans[0,:]=np.copy(x0)
-    for i in range(1,tau):
+    x0, dt, beta, stride, tau, Deep = Ps
+    dim = 2
+    np.random.seed(divmod(torch.seed(), 2**32)[0])
+    ans = np.zeros((tau + 1, dim))
+    ans[0, :] = np.copy(x0)
+    for i in range(1, tau):
         for j in range(stride):
-            x0=x0+F(x0,Deep=Deep)*dt+((2*dt/beta)**.5)*np.random.randn(dim)
-        ans[i]=np.copy(x0)
+            x0 = (
+                x0
+                + F(x0, Deep=Deep) * dt
+                + ((2 * dt / beta) ** 0.5) * np.random.randn(dim)
+            )
+        ans[i] = np.copy(x0)
     return ans
+
 
 def ellipseA(x):
     """Compute the indicator function on A.
@@ -127,16 +146,22 @@ def ellipseA(x):
         Indicator function on the set A.
 
     """
-    cntr_X=-.5
-    cntr_y=1.5
-    a=-6.5
-    b=11.
-    c=-6.5
-    r=.3
-    return (a*(x[...,0]-cntr_X)**2+b*(x[...,0]-cntr_X)*(x[...,1]-cntr_y)+c*(x[...,1]-cntr_y)**2+r>0).astype(float)
+    cntr_X = -0.5
+    cntr_y = 1.5
+    a = -6.5
+    b = 11.0
+    c = -6.5
+    r = 0.3
+    return (
+        a * (x[..., 0] - cntr_X) ** 2
+        + b * (x[..., 0] - cntr_X) * (x[..., 1] - cntr_y)
+        + c * (x[..., 1] - cntr_y) ** 2
+        + r
+        > 0
+    ).astype(float)
 
 
-#>0 id in B
+# >0 id in B
 def ellipseB(x):
     """Compute the indicator function on B.
 
@@ -150,7 +175,9 @@ def ellipseB(x):
         Indicator function on the set B.
 
     """
-    return (-5.0*(x[...,1]-0.02)**2 - (x[...,0]-0.6)**2 + 0.2>0).astype(float)
+    return (-5.0 * (x[..., 1] - 0.02) ** 2 - (x[..., 0] - 0.6) ** 2 + 0.2 > 0).astype(
+        float
+    )
 
 
 def generator_reversible_2d(potential, kT, x, y):
@@ -201,7 +228,7 @@ def _generator_reversible_helper(transitions, u, kT, ind, shape):
 
     # transitioning to adjacent cell
     for row, col, sep in transitions:
-        p = (2.0 * kT / sep ** 2) / (1.0 + np.exp((u[col] - u[row]) / kT))
+        p = (2.0 * kT / sep**2) / (1.0 + np.exp((u[col] - u[row]) / kT))
         p0[row] -= p
         data.append(p.ravel())
         row_ind.append(ind[row].ravel())
@@ -215,9 +242,8 @@ def _generator_reversible_helper(transitions, u, kT, ind, shape):
     data = np.concatenate(data)
     row_ind = np.concatenate(row_ind)
     col_ind = np.concatenate(col_ind)
-    return scipy.sparse.csr_matrix(
-        (data, (row_ind, col_ind)), shape=(p0.size, p0.size)
-    )
+    return scipy.sparse.csr_matrix((data, (row_ind, col_ind)), shape=(p0.size, p0.size))
+
 
 def forward_committor(generator, weights, in_domain, guess):
     """Compute the forward committor.
@@ -281,9 +307,10 @@ def forward_feynman_kac(generator, weights, in_domain, function, guess):
     a = generator[d, :][:, d]
     b = -generator[d, :] @ g - f[d]
     coeffs = scipy.sparse.linalg.spsolve(a, b)
-    return (
-        g + scipy.sparse.identity(len(g), format="csr")[:, d] @ coeffs
-    ).reshape(shape)
+    return (g + scipy.sparse.identity(len(g), format="csr")[:, d] @ coeffs).reshape(
+        shape
+    )
+
 
 def forward_mfpt(generator, weights, in_domain, guess):
     """Compute the forward mean first passage time.
@@ -308,7 +335,17 @@ def forward_mfpt(generator, weights, in_domain, guess):
     """
     return forward_feynman_kac(generator, weights, in_domain, 1.0, guess)
 
-def Ref_Q(V,InA_func,InB_func,beta=1,res=100,xrange=[-1.5,1],yrange=[-.5,1.7],Deep=False):
+
+def Ref_Q(
+    V,
+    InA_func,
+    InB_func,
+    beta=1,
+    res=100,
+    xrange=[-1.5, 1],
+    yrange=[-0.5, 1.7],
+    Deep=False,
+):
     """Compute the forward committor using an accurate grid based scheme.
 
     Parameters
@@ -331,23 +368,34 @@ def Ref_Q(V,InA_func,InB_func,beta=1,res=100,xrange=[-1.5,1],yrange=[-.5,1.7],De
         Forward committor at each point.
 
     """
-    x=np.linspace(xrange[0],xrange[1],res)
-    y=np.linspace(yrange[0],yrange[1],res)
-    X,Y=np.meshgrid(x,y)
-    DGrid=np.asarray(np.concatenate([X[:,:,None],Y[:,:,None]],axis=-1))
-    DGrid_Reshape=np.copy(DGrid).reshape((res**2,2))
-    InA_Reshape=InA_func(DGrid_Reshape)
-    InB_Reshape=InB_func(DGrid_Reshape)
-    InD_Reshape=1-(InA_func(DGrid_Reshape)+InB_func(DGrid_Reshape))
-    InA=InA_func(DGrid)
-    InB=InB_func(DGrid)
-    InD=1-(InA_func(DGrid)+InB_func(DGrid))
-    L=generator_reversible_2d(V(DGrid,Deep=Deep),1/beta,x,y)
-    Qref=forward_committor(L,np.ones_like(InD.flatten()),InD.flatten().astype(bool),InB.flatten())
-    return Qref,DGrid_Reshape,InA_Reshape,InB_Reshape,L
+    x = np.linspace(xrange[0], xrange[1], res)
+    y = np.linspace(yrange[0], yrange[1], res)
+    X, Y = np.meshgrid(x, y)
+    DGrid = np.asarray(np.concatenate([X[:, :, None], Y[:, :, None]], axis=-1))
+    DGrid_Reshape = np.copy(DGrid).reshape((res**2, 2))
+    InA_Reshape = InA_func(DGrid_Reshape)
+    InB_Reshape = InB_func(DGrid_Reshape)
+    InD_Reshape = 1 - (InA_func(DGrid_Reshape) + InB_func(DGrid_Reshape))
+    InA = InA_func(DGrid)
+    InB = InB_func(DGrid)
+    InD = 1 - (InA_func(DGrid) + InB_func(DGrid))
+    L = generator_reversible_2d(V(DGrid, Deep=Deep), 1 / beta, x, y)
+    Qref = forward_committor(
+        L, np.ones_like(InD.flatten()), InD.flatten().astype(bool), InB.flatten()
+    )
+    return Qref, DGrid_Reshape, InA_Reshape, InB_Reshape, L
 
 
-def Ref_MFPT(V,InA_func,InB_func,beta=1,res=100,xrange=[-1.5,1],yrange=[-.5,1.7],Deep=False):
+def Ref_MFPT(
+    V,
+    InA_func,
+    InB_func,
+    beta=1,
+    res=100,
+    xrange=[-1.5, 1],
+    yrange=[-0.5, 1.7],
+    Deep=False,
+):
     """Compute the forward committor using an accurate grid based scheme.
 
     Parameters
@@ -370,23 +418,27 @@ def Ref_MFPT(V,InA_func,InB_func,beta=1,res=100,xrange=[-1.5,1],yrange=[-.5,1.7]
         Forward committor at each point.
 
     """
-    x=np.linspace(xrange[0],xrange[1],res)
-    y=np.linspace(yrange[0],yrange[1],res)
-    X,Y=np.meshgrid(x,y)
-    DGrid=np.asarray(np.concatenate([X[:,:,None],Y[:,:,None]],axis=-1))
-    DGrid_Reshape=np.copy(DGrid).reshape((res**2,2))
-    InA_Reshape=InA_func(DGrid_Reshape)
-    InB_Reshape=InB_func(DGrid_Reshape)
-    InD_Reshape=1-(InA_func(DGrid_Reshape)*0+InB_func(DGrid_Reshape))
-    InA=InA_func(DGrid)*0
-    InB=InB_func(DGrid)
-    InD=1-(InA_func(DGrid)*0+InB_func(DGrid))
-    L=generator_reversible_2d(V(DGrid,Deep=Deep),1/beta,x,y)
-    Qref=forward_mfpt(L,np.ones_like(InD.flatten()),InD.flatten().astype(bool),0*InB.flatten())
-    return Qref,DGrid_Reshape,InA_Reshape,InB_Reshape,L
+    x = np.linspace(xrange[0], xrange[1], res)
+    y = np.linspace(yrange[0], yrange[1], res)
+    X, Y = np.meshgrid(x, y)
+    DGrid = np.asarray(np.concatenate([X[:, :, None], Y[:, :, None]], axis=-1))
+    DGrid_Reshape = np.copy(DGrid).reshape((res**2, 2))
+    InA_Reshape = InA_func(DGrid_Reshape)
+    InB_Reshape = InB_func(DGrid_Reshape)
+    InD_Reshape = 1 - (InA_func(DGrid_Reshape) * 0 + InB_func(DGrid_Reshape))
+    InA = InA_func(DGrid) * 0
+    InB = InB_func(DGrid)
+    InD = 1 - (InA_func(DGrid) * 0 + InB_func(DGrid))
+    L = generator_reversible_2d(V(DGrid, Deep=Deep), 1 / beta, x, y)
+    Qref = forward_mfpt(
+        L, np.ones_like(InD.flatten()), InD.flatten().astype(bool), 0 * InB.flatten()
+    )
+    return Qref, DGrid_Reshape, InA_Reshape, InB_Reshape, L
 
 
-def Ref_Subspace(V,k=3,beta=1,res=100,xrange=[-1.5,1],yrange=[-.5,1.7],Deep=False):
+def Ref_Subspace(
+    V, k=3, beta=1, res=100, xrange=[-1.5, 1], yrange=[-0.5, 1.7], Deep=False
+):
     """Compute the forward committor using an accurate grid based scheme.
 
     Parameters
@@ -409,12 +461,12 @@ def Ref_Subspace(V,k=3,beta=1,res=100,xrange=[-1.5,1],yrange=[-.5,1.7],Deep=Fals
         Forward committor at each point.
 
     """
-    x=np.linspace(xrange[0],xrange[1],res)
-    y=np.linspace(yrange[0],yrange[1],res)
-    X,Y=np.meshgrid(x,y)
-    DGrid=np.asarray(np.concatenate([X[:,:,None],Y[:,:,None]],axis=-1))
-    DGrid_Reshape=np.copy(DGrid).reshape((res**2,2))
-    L=generator_reversible_2d(V(DGrid,Deep=Deep),1/beta,x,y)
-    val,vec=scipy.sparse.linalg.eigs(L,k=k,which='SM')
-    inds=np.argsort(val**2)
-    return val[inds],vec[:,inds],DGrid_Reshape,L
+    x = np.linspace(xrange[0], xrange[1], res)
+    y = np.linspace(yrange[0], yrange[1], res)
+    X, Y = np.meshgrid(x, y)
+    DGrid = np.asarray(np.concatenate([X[:, :, None], Y[:, :, None]], axis=-1))
+    DGrid_Reshape = np.copy(DGrid).reshape((res**2, 2))
+    L = generator_reversible_2d(V(DGrid, Deep=Deep), 1 / beta, x, y)
+    val, vec = scipy.sparse.linalg.eigs(L, k=k, which="SM")
+    inds = np.argsort(val**2)
+    return val[inds], vec[:, inds], DGrid_Reshape, L
