@@ -10,6 +10,7 @@ This repository contains code to run the inexact iterative numerical algebra sch
  - `optax` for optimizers
  - `numpy`
  - `scipy`
+ - `numba` to for numerical acceleration
  
 See the [Jax repository](https://github.com/google/jax#installation) for more detailed installation instructions on GPUs.
  
